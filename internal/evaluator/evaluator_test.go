@@ -46,8 +46,8 @@ func sumWeights(ws []trafficv1alpha1.BackendWeight) int32 {
 	return s
 }
 
-func latency(samples map[string]float64, threshold float64) Signal {
-	return Signal{Name: "latency", Samples: samples, Threshold: threshold}
+func latency(samples map[string]float64) Signal {
+	return Signal{Name: "latency", Samples: samples, Threshold: 500}
 }
 
 func errorRate(samples map[string]float64, threshold float64) Signal {
@@ -62,7 +62,7 @@ func TestThresholdEvaluator_ShiftsAwayFromUnhealthy(t *testing.T) {
 			backend("v2", 10, 80),
 		},
 		Current:        []trafficv1alpha1.BackendWeight{weight("v1", 50), weight("v2", 50)},
-		Signals:        []Signal{latency(map[string]float64{"v1": 200, "v2": 700}, 500)},
+		Signals:        []Signal{latency(map[string]float64{"v1": 200, "v2": 700})},
 		MaxStepPercent: 20,
 	})
 	if !d.Changed {
@@ -82,7 +82,7 @@ func TestThresholdEvaluator_HoldsWhenAllHealthy(t *testing.T) {
 	d := ev.Evaluate(Input{
 		Backends:       []trafficv1alpha1.Backend{backend("v1", 20, 100), backend("v2", 10, 80)},
 		Current:        []trafficv1alpha1.BackendWeight{weight("v1", 50), weight("v2", 50)},
-		Signals:        []Signal{latency(map[string]float64{"v1": 100, "v2": 200}, 500)},
+		Signals:        []Signal{latency(map[string]float64{"v1": 100, "v2": 200})},
 		MaxStepPercent: 20,
 	})
 	if d.Changed {
@@ -95,7 +95,7 @@ func TestThresholdEvaluator_HoldsWhenAllUnhealthy(t *testing.T) {
 	d := ev.Evaluate(Input{
 		Backends:       []trafficv1alpha1.Backend{backend("v1", 20, 100), backend("v2", 10, 80)},
 		Current:        []trafficv1alpha1.BackendWeight{weight("v1", 50), weight("v2", 50)},
-		Signals:        []Signal{latency(map[string]float64{"v1": 800, "v2": 900}, 500)},
+		Signals:        []Signal{latency(map[string]float64{"v1": 800, "v2": 900})},
 		MaxStepPercent: 20,
 	})
 	if d.Changed {
@@ -108,7 +108,7 @@ func TestThresholdEvaluator_HoldsWhenNoSamples(t *testing.T) {
 	d := ev.Evaluate(Input{
 		Backends:       []trafficv1alpha1.Backend{backend("v1", 20, 100), backend("v2", 10, 80)},
 		Current:        []trafficv1alpha1.BackendWeight{weight("v1", 50), weight("v2", 50)},
-		Signals:        []Signal{latency(map[string]float64{}, 500)},
+		Signals:        []Signal{latency(map[string]float64{})},
 		MaxStepPercent: 20,
 	})
 	if d.Changed {
@@ -136,7 +136,7 @@ func TestThresholdEvaluator_RespectsMinBound(t *testing.T) {
 			backend("v2", 40, 80),
 		},
 		Current:        []trafficv1alpha1.BackendWeight{weight("v1", 40), weight("v2", 60)},
-		Signals:        []Signal{latency(map[string]float64{"v1": 100, "v2": 900}, 500)},
+		Signals:        []Signal{latency(map[string]float64{"v1": 100, "v2": 900})},
 		MaxStepPercent: 50,
 	})
 	if !d.Changed {
@@ -156,7 +156,7 @@ func TestThresholdEvaluator_RespectsMaxBound(t *testing.T) {
 			backend("v2", 0, 100),
 		},
 		Current:        []trafficv1alpha1.BackendWeight{weight("v1", 50), weight("v2", 50)},
-		Signals:        []Signal{latency(map[string]float64{"v1": 100, "v2": 900}, 500)},
+		Signals:        []Signal{latency(map[string]float64{"v1": 100, "v2": 900})},
 		MaxStepPercent: 50,
 	})
 	if !d.Changed {
@@ -173,7 +173,7 @@ func TestThresholdEvaluator_CappedByMaxStepPercent(t *testing.T) {
 	d := ev.Evaluate(Input{
 		Backends:       []trafficv1alpha1.Backend{backend("v1", 0, 100), backend("v2", 0, 100)},
 		Current:        []trafficv1alpha1.BackendWeight{weight("v1", 50), weight("v2", 50)},
-		Signals:        []Signal{latency(map[string]float64{"v1": 100, "v2": 900}, 500)},
+		Signals:        []Signal{latency(map[string]float64{"v1": 100, "v2": 900})},
 		MaxStepPercent: 5,
 	})
 	got := weightsMap(d.Weights)
@@ -187,7 +187,7 @@ func TestThresholdEvaluator_PreservesOrder(t *testing.T) {
 	d := ev.Evaluate(Input{
 		Backends:       []trafficv1alpha1.Backend{backend("v1", 20, 100), backend("v2", 10, 80)},
 		Current:        []trafficv1alpha1.BackendWeight{weight("v1", 50), weight("v2", 50)},
-		Signals:        []Signal{latency(map[string]float64{"v1": 100, "v2": 700}, 500)},
+		Signals:        []Signal{latency(map[string]float64{"v1": 100, "v2": 700})},
 		MaxStepPercent: 10,
 	})
 	if d.Weights[0].Name != "v1" || d.Weights[1].Name != "v2" {
@@ -203,7 +203,7 @@ func TestThresholdEvaluator_ShiftsOnErrorRateAlone(t *testing.T) {
 		Backends: []trafficv1alpha1.Backend{backend("v1", 0, 100), backend("v2", 0, 100)},
 		Current:  []trafficv1alpha1.BackendWeight{weight("v1", 50), weight("v2", 50)},
 		Signals: []Signal{
-			latency(map[string]float64{"v1": 100, "v2": 150}, 500),
+			latency(map[string]float64{"v1": 100, "v2": 150}),
 			errorRate(map[string]float64{"v1": 0.2, "v2": 6}, 1),
 		},
 		MaxStepPercent: 10,
@@ -233,7 +233,7 @@ func TestThresholdEvaluator_CombinesSignalsIntoScore(t *testing.T) {
 		Signals: []Signal{
 			// v2 breaches latency a little; v3 breaches latency a lot AND
 			// error rate. v3 should be the donor.
-			latency(map[string]float64{"v1": 100, "v2": 600, "v3": 900}, 500),
+			latency(map[string]float64{"v1": 100, "v2": 600, "v3": 900}),
 			errorRate(map[string]float64{"v1": 0.1, "v2": 0.2, "v3": 5}, 1),
 		},
 		MaxStepPercent: 5,

@@ -213,7 +213,7 @@ func main() {
 		Evaluator:    evaluator.NewThresholdEvaluator(),
 		Smoother:     evaluator.NewSmoother(evaluator.DefaultMaxWindow),
 		MetricSource: metricSource,
-		Recorder:     mgr.GetEventRecorderFor("trafficpolicy-controller"),
+		Recorder:     controller.NewRuntimeEventRecorder(mgr.GetEventRecorder("trafficpolicy-controller")),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "Failed to create controller", "controller", "TrafficPolicy")
 		os.Exit(1)

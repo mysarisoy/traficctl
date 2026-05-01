@@ -30,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -72,7 +71,11 @@ type TrafficPolicyReconciler struct {
 	Smoother     *evaluator.Smoother
 	// Recorder emits Kubernetes Events tied to the policy. Optional —
 	// when nil, events are silently skipped (keeps unit tests lean).
-	Recorder record.EventRecorder
+	Recorder EventRecorder
+}
+
+type EventRecorder interface {
+	Event(policy *trafficv1alpha1.TrafficPolicy, eventType, reason, message string)
 }
 
 func (r *TrafficPolicyReconciler) emit(policy *trafficv1alpha1.TrafficPolicy, eventType, reason, message string) {
@@ -99,7 +102,7 @@ func (r *TrafficPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	if err := r.Get(ctx, req.NamespacedName, &policy); err != nil {
 		if apierrors.IsNotFound(err) {
 			if r.Smoother != nil {
-				r.Smoother.Forget(req.NamespacedName.String())
+				r.Smoother.Forget(req.String())
 			}
 			forgetPolicyMetrics(req.Namespace, req.Name)
 			return ctrl.Result{}, nil

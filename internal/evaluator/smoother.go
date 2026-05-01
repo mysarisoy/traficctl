@@ -72,10 +72,7 @@ func (s *Smoother) Observe(policyKey, backend string, value float64, window int)
 	}
 	s.data[policyKey][backend] = buf
 
-	start := len(buf) - window
-	if start < 0 {
-		start = 0
-	}
+	start := max(len(buf)-window, 0)
 	slice := buf[start:]
 	var sum float64
 	for _, v := range slice {

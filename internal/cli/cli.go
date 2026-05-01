@@ -176,9 +176,13 @@ func runList(ctx context.Context, c ctrlclient.Client, namespace string, allNs b
 
 	tw := tabwriter.NewWriter(out, 0, 0, 2, ' ', 0)
 	if allNs {
-		fmt.Fprintln(tw, "NAMESPACE\tNAME\tROUTE\tPHASE\tPAUSED\tWEIGHTS")
+		if _, err := fmt.Fprintln(tw, "NAMESPACE\tNAME\tROUTE\tPHASE\tPAUSED\tWEIGHTS"); err != nil {
+			return err
+		}
 	} else {
-		fmt.Fprintln(tw, "NAME\tROUTE\tPHASE\tPAUSED\tWEIGHTS")
+		if _, err := fmt.Fprintln(tw, "NAME\tROUTE\tPHASE\tPAUSED\tWEIGHTS"); err != nil {
+			return err
+		}
 	}
 	for _, p := range list.Items {
 		weights := formatWeights(p.Status.Weights)
@@ -187,9 +191,13 @@ func runList(ctx context.Context, c ctrlclient.Client, namespace string, allNs b
 			phase = "-"
 		}
 		if allNs {
-			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%t\t%s\n", p.Namespace, p.Name, p.Spec.RouteName, phase, p.Spec.Paused, weights)
+			if _, err := fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%t\t%s\n", p.Namespace, p.Name, p.Spec.RouteName, phase, p.Spec.Paused, weights); err != nil {
+				return err
+			}
 		} else {
-			fmt.Fprintf(tw, "%s\t%s\t%s\t%t\t%s\n", p.Name, p.Spec.RouteName, phase, p.Spec.Paused, weights)
+			if _, err := fmt.Fprintf(tw, "%s\t%s\t%s\t%t\t%s\n", p.Name, p.Spec.RouteName, phase, p.Spec.Paused, weights); err != nil {
+				return err
+			}
 		}
 	}
 	return tw.Flush()
@@ -203,22 +211,42 @@ func runStatus(ctx context.Context, c ctrlclient.Client, namespace, name string,
 		return fmt.Errorf("get policy: %w", err)
 	}
 
-	fmt.Fprintf(out, "Name:         %s\n", p.Name)
-	fmt.Fprintf(out, "Namespace:    %s\n", p.Namespace)
-	fmt.Fprintf(out, "Route:        %s\n", p.Spec.RouteName)
-	fmt.Fprintf(out, "Paused:       %t\n", p.Spec.Paused)
-	fmt.Fprintf(out, "Phase:        %s\n", defaultString(string(p.Status.Phase), "-"))
-	fmt.Fprintf(out, "LastReason:   %s\n", defaultString(p.Status.LastTransitionReason, "-"))
+	if _, err := fmt.Fprintf(out, "Name:         %s\n", p.Name); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(out, "Namespace:    %s\n", p.Namespace); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(out, "Route:        %s\n", p.Spec.RouteName); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(out, "Paused:       %t\n", p.Spec.Paused); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(out, "Phase:        %s\n", defaultString(string(p.Status.Phase), "-")); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(out, "LastReason:   %s\n", defaultString(p.Status.LastTransitionReason, "-")); err != nil {
+		return err
+	}
 	if p.Status.LastEvaluationTime != nil {
-		fmt.Fprintf(out, "LastEval:     %s\n", p.Status.LastEvaluationTime.Format("2006-01-02T15:04:05Z07:00"))
+		if _, err := fmt.Fprintf(out, "LastEval:     %s\n", p.Status.LastEvaluationTime.Format("2006-01-02T15:04:05Z07:00")); err != nil {
+			return err
+		}
 	}
 	if p.Status.LastWeightChangeTime != nil {
-		fmt.Fprintf(out, "LastShift:    %s\n", p.Status.LastWeightChangeTime.Format("2006-01-02T15:04:05Z07:00"))
+		if _, err := fmt.Fprintf(out, "LastShift:    %s\n", p.Status.LastWeightChangeTime.Format("2006-01-02T15:04:05Z07:00")); err != nil {
+			return err
+		}
 	}
 
-	fmt.Fprintln(out, "\nBackends:")
+	if _, err := fmt.Fprintln(out, "\nBackends:"); err != nil {
+		return err
+	}
 	tw := tabwriter.NewWriter(out, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(tw, "  NAME\tMIN\tMAX\tCURRENT")
+	if _, err := fmt.Fprintln(tw, "  NAME\tMIN\tMAX\tCURRENT"); err != nil {
+		return err
+	}
 	currents := map[string]int32{}
 	for _, w := range p.Status.Weights {
 		currents[w.Name] = w.Weight
@@ -228,25 +256,35 @@ func runStatus(ctx context.Context, c ctrlclient.Client, namespace, name string,
 		if v, ok := currents[b.Name]; ok {
 			w = fmt.Sprintf("%d", v)
 		}
-		fmt.Fprintf(tw, "  %s\t%d\t%d\t%s\n", b.Name, b.MinWeight, b.MaxWeight, w)
+		if _, err := fmt.Fprintf(tw, "  %s\t%d\t%d\t%s\n", b.Name, b.MinWeight, b.MaxWeight, w); err != nil {
+			return err
+		}
 	}
 	if err := tw.Flush(); err != nil {
 		return err
 	}
 
 	if len(p.Status.Conditions) > 0 {
-		fmt.Fprintln(out, "\nConditions:")
+		if _, err := fmt.Fprintln(out, "\nConditions:"); err != nil {
+			return err
+		}
 		ctw := tabwriter.NewWriter(out, 0, 0, 2, ' ', 0)
-		fmt.Fprintln(ctw, "  TYPE\tSTATUS\tREASON\tMESSAGE")
+		if _, err := fmt.Fprintln(ctw, "  TYPE\tSTATUS\tREASON\tMESSAGE"); err != nil {
+			return err
+		}
 		for _, cond := range p.Status.Conditions {
-			fmt.Fprintf(ctw, "  %s\t%s\t%s\t%s\n", cond.Type, cond.Status, cond.Reason, cond.Message)
+			if _, err := fmt.Fprintf(ctw, "  %s\t%s\t%s\t%s\n", cond.Type, cond.Status, cond.Reason, cond.Message); err != nil {
+				return err
+			}
 		}
 		if err := ctw.Flush(); err != nil {
 			return err
 		}
 		ready := meta.FindStatusCondition(p.Status.Conditions, "Ready")
 		if ready != nil && ready.Status != "True" {
-			fmt.Fprintf(out, "\nNot ready: %s — %s\n", ready.Reason, ready.Message)
+			if _, err := fmt.Fprintf(out, "\nNot ready: %s - %s\n", ready.Reason, ready.Message); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -260,7 +298,9 @@ func togglePaused(ctx context.Context, c ctrlclient.Client, namespace, name stri
 		return fmt.Errorf("get policy: %w", err)
 	}
 	if p.Spec.Paused == paused {
-		fmt.Fprintf(out, "%s/%s already paused=%t; nothing to do\n", namespace, name, paused)
+		if _, err := fmt.Fprintf(out, "%s/%s already paused=%t; nothing to do\n", namespace, name, paused); err != nil {
+			return err
+		}
 		return nil
 	}
 	original := p.DeepCopy()
@@ -272,7 +312,9 @@ func togglePaused(ctx context.Context, c ctrlclient.Client, namespace, name stri
 	if paused {
 		verb = "frozen"
 	}
-	fmt.Fprintf(out, "%s/%s %s\n", namespace, name, verb)
+	if _, err := fmt.Fprintf(out, "%s/%s %s\n", namespace, name, verb); err != nil {
+		return err
+	}
 	return nil
 }
 

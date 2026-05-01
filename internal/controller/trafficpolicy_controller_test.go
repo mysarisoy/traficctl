@@ -151,7 +151,7 @@ var _ = Describe("TrafficPolicy Controller", func() {
 				Client:   k8sClient,
 				Scheme:   k8sClient.Scheme(),
 				Weighter: w,
-				Recorder: rec,
+				Recorder: NewLegacyEventRecorder(rec),
 			}
 
 			_, err := r.Reconcile(ctx, reconcile.Request{NamespacedName: typeNamespacedName})
@@ -232,7 +232,7 @@ var _ = Describe("TrafficPolicy Controller", func() {
 				MetricSource: src,
 				Evaluator:    evaluator.NewThresholdEvaluator(),
 				Smoother:     evaluator.NewSmoother(evaluator.DefaultMaxWindow),
-				Recorder:     rec,
+				Recorder:     NewLegacyEventRecorder(rec),
 			}
 
 			_, err := r.Reconcile(ctx, reconcile.Request{NamespacedName: typeNamespacedName})
@@ -330,7 +330,7 @@ var _ = Describe("TrafficPolicy Controller", func() {
 				MetricSource: src,
 				Evaluator:    evaluator.NewThresholdEvaluator(),
 				Smoother:     evaluator.NewSmoother(evaluator.DefaultMaxWindow),
-				Recorder:     rec,
+				Recorder:     NewLegacyEventRecorder(rec),
 			}
 
 			_, err := r.Reconcile(ctx, reconcile.Request{NamespacedName: typeNamespacedName})
