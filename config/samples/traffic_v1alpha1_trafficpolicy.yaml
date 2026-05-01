@@ -1,0 +1,27 @@
+apiVersion: traffic.traffic.devops.io/v1alpha1
+kind: TrafficPolicy
+metadata:
+  labels:
+    app.kubernetes.io/name: trafficctl
+    app.kubernetes.io/managed-by: kustomize
+  name: auth-api
+spec:
+  routeName: auth-route
+  backends:
+    - name: auth-v1
+      minWeight: 20
+      maxWeight: 100
+    - name: auth-v2
+      minWeight: 10
+      maxWeight: 80
+  metrics:
+    latency:
+      query: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{service="auth"}[1m]))
+      thresholdMs: 500
+    errorRate:
+      query: 100 * sum by (backend) (rate(http_requests_total{service="auth",status=~"5.."}[1m])) / sum by (backend) (rate(http_requests_total{service="auth"}[1m]))
+      thresholdPercent: 2
+  strategy:
+    cooldownSeconds: 30
+    maxStepPercent: 20
+    movingAverageWindow: 3

@@ -1,0 +1,308 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.20.1
+  name: trafficpolicies.traffic.traffic.devops.io
+spec:
+  group: traffic.traffic.devops.io
+  names:
+    kind: TrafficPolicy
+    listKind: TrafficPolicyList
+    plural: trafficpolicies
+    shortNames:
+    - tp
+    singular: trafficpolicy
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.routeName
+      name: Route
+      type: string
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .spec.paused
+      name: Paused
+      type: boolean
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: TrafficPolicy is the Schema for the trafficpolicies API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: spec defines the desired state of TrafficPolicy
+            properties:
+              backends:
+                description: |-
+                  Backends declares the versions whose traffic weights are controlled.
+                  At least two backends must be declared; weights across backends always
+                  sum to 100.
+                items:
+                  description: |-
+                    Backend identifies a version participating in the split and the bounds
+                    within which its weight may move.
+                  properties:
+                    maxWeight:
+                      description: MaxWeight is the highest weight (0-100) this backend
+                        may receive.
+                      format: int32
+                      maximum: 100
+                      minimum: 0
+                      type: integer
+                    minWeight:
+                      description: |-
+                        MinWeight is the lowest weight (0-100) this backend may receive.
+                        Prevents starvation; useful for keeping a canary under observation.
+                      format: int32
+                      maximum: 100
+                      minimum: 0
+                      type: integer
+                    name:
+                      description: Name matches a backendRef name on the target HTTPRoute.
+                      minLength: 1
+                      type: string
+                  required:
+                  - maxWeight
+                  - minWeight
+                  - name
+                  type: object
+                minItems: 2
+                type: array
+              metrics:
+                description: |-
+                  Metrics declares the signals driving weight decisions. When omitted,
+                  the controller holds weights at their current value (last known good).
+                properties:
+                  errorRate:
+                    description: |-
+                      ErrorRate flags backends whose HTTP error rate (e.g. 5xx fraction)
+                      crosses a threshold.
+                    properties:
+                      query:
+                        description: |-
+                          Query is the PromQL expression returning a per-backend error-rate
+                          percentage (0-100).
+                        minLength: 1
+                        type: string
+                      thresholdPercent:
+                        description: |-
+                          ThresholdPercent is the error-rate ceiling, expressed as percent
+                          (1-100). Sub-percent thresholds can be achieved in PromQL by
+                          scaling the query (e.g. report in per-mille and set threshold
+                          accordingly).
+                        format: int32
+                        maximum: 100
+                        minimum: 1
+                        type: integer
+                    required:
+                    - query
+                    - thresholdPercent
+                    type: object
+                  latency:
+                    description: Latency applies a P95-style threshold check against
+                      a PromQL query.
+                    properties:
+                      query:
+                        description: Query is the PromQL expression returning a vector
+                          keyed by backend.
+                        minLength: 1
+                        type: string
+                      thresholdMs:
+                        description: ThresholdMs is the latency ceiling in milliseconds.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                    required:
+                    - query
+                    - thresholdMs
+                    type: object
+                type: object
+              paused:
+                description: |-
+                  Paused freezes the controller: observed metrics are still recorded but
+                  no weight changes are applied. Useful for incident response.
+                type: boolean
+              routeName:
+                description: |-
+                  RouteName is the name of the Gateway API HTTPRoute in the same namespace
+                  whose backend weights this policy manages.
+                minLength: 1
+                type: string
+              strategy:
+                description: Strategy bounds how aggressively the controller may change
+                  weights.
+                properties:
+                  cooldownSeconds:
+                    default: 30
+                    description: CooldownSeconds is the minimum wait between two weight
+                      changes.
+                    format: int32
+                    minimum: 0
+                    type: integer
+                  maxStepPercent:
+                    default: 20
+                    description: |-
+                      MaxStepPercent caps how many percentage points a single decision may
+                      shift per backend.
+                    format: int32
+                    maximum: 100
+                    minimum: 1
+                    type: integer
+                  movingAverageWindow:
+                    default: 3
+                    description: |-
+                      MovingAverageWindow is the number of recent metric samples blended
+                      before a decision, smoothing transient spikes.
+                    format: int32
+                    minimum: 1
+                    type: integer
+                type: object
+            required:
+            - backends
+            - routeName
+            type: object
+          status:
+            description: status defines the observed state of TrafficPolicy
+            properties:
+              conditions:
+                description: |-
+                  Conditions follow the standard Kubernetes pattern. Expected types:
+                  "Ready", "MetricsAvailable", "RouteResolved".
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              lastEvaluationTime:
+                description: LastEvaluationTime is when the controller last ran a
+                  decision cycle.
+                format: date-time
+                type: string
+              lastTransitionReason:
+                description: |-
+                  LastTransitionReason is a short human-readable explanation of the
+                  most recent weight change, e.g. "auth-v2 latency over threshold".
+                type: string
+              lastWeightChangeTime:
+                description: |-
+                  LastWeightChangeTime is when the controller last changed the applied
+                  weights. Used to enforce Strategy.CooldownSeconds.
+                format: date-time
+                type: string
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the .metadata.generation the controller last
+                  processed. Lets clients detect stale status.
+                format: int64
+                type: integer
+              phase:
+                description: Phase is a coarse summary of controller behavior.
+                enum:
+                - Pending
+                - Stable
+                - Progressing
+                - Frozen
+                - Degraded
+                type: string
+              weights:
+                description: Weights are the weights the controller most recently
+                  applied.
+                items:
+                  description: BackendWeight is the current weight applied to a backend.
+                  properties:
+                    name:
+                      type: string
+                    weight:
+                      format: int32
+                      type: integer
+                  required:
+                  - name
+                  - weight
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - name
+                x-kubernetes-list-type: map
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

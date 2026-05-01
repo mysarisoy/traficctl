@@ -1,0 +1,18 @@
+apiVersion: traffic.traffic.devops.io/v1alpha1
+kind: TrafficPolicy
+metadata:
+  name: echo-canary
+  namespace: trafficctl-demo
+spec:
+  routeName: echo-route
+  backends:
+    - { name: echo-v1, minWeight: 0,  maxWeight: 100 }
+    - { name: echo-v2, minWeight: 0,  maxWeight: 100 }
+  metrics:
+    latency:
+      query: "p95_latency_ms"
+      thresholdMs: 500
+  strategy:
+    cooldownSeconds: 10
+    maxStepPercent: 20
+    movingAverageWindow: 1

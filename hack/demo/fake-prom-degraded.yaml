@@ -1,0 +1,19 @@
+# Apply this on top of fake-prom.yaml to simulate echo-v2 latency
+# crossing the 500ms threshold. Triggers controller weight shifts.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fake-prom-payload
+  namespace: trafficctl-demo
+data:
+  response.json: |
+    {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": [
+          {"metric": {"backend": "echo-v1"}, "value": [1, "120"]},
+          {"metric": {"backend": "echo-v2"}, "value": [1, "850"]}
+        ]
+      }
+    }

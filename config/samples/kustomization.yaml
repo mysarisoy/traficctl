@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- traffic_v1alpha1_trafficpolicy.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

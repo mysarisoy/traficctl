@@ -1,0 +1,65 @@
+# A throwaway "Prometheus" that serves a fixed JSON vector response.
+# Swap the ConfigMap to simulate a healthy/degraded canary without
+# bringing up a real Prometheus + scrape pipeline for the demo.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trafficctl-demo
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fake-prom-payload
+  namespace: trafficctl-demo
+data:
+  # Healthy baseline: both backends well under threshold.
+  response.json: |
+    {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": [
+          {"metric": {"backend": "echo-v1"}, "value": [1, "120"]},
+          {"metric": {"backend": "echo-v2"}, "value": [1, "180"]}
+        ]
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fake-prom
+  namespace: trafficctl-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: fake-prom }
+  template:
+    metadata:
+      labels: { app: fake-prom }
+    spec:
+      containers:
+        - name: server
+          image: hashicorp/http-echo:1.0
+          args:
+            - -listen=:9090
+            - -text=$(RESPONSE)
+          env:
+            - name: RESPONSE
+              valueFrom:
+                configMapKeyRef:
+                  name: fake-prom-payload
+                  key: response.json
+          ports:
+            - containerPort: 9090
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fake-prom
+  namespace: trafficctl-demo
+spec:
+  selector: { app: fake-prom }
+  ports:
+    - port: 9090
+      targetPort: 9090
