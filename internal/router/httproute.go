@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	gatewayv1 "sigs.k8s.io/gateway-api/apis/v1"
 
-	trafficv1alpha1 "github.com/yusuf/trafficctl/api/v1alpha1"
+	trafficv1alpha1 "github.com/mysarisoy/trafficctl/api/v1alpha1"
 )
 
 // HTTPRouteWeighter writes backend weights onto a Gateway API HTTPRoute.

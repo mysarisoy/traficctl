@@ -1,7 +1,7 @@
 package controller
 
 import (
-	trafficv1alpha1 "github.com/yusuf/trafficctl/api/v1alpha1"
+	trafficv1alpha1 "github.com/mysarisoy/trafficctl/api/v1alpha1"
 	"k8s.io/client-go/tools/events"
 	"k8s.io/client-go/tools/record"
 )

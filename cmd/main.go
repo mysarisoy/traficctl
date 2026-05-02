@@ -38,11 +38,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	gatewayv1 "sigs.k8s.io/gateway-api/apis/v1"
 
-	trafficv1alpha1 "github.com/yusuf/trafficctl/api/v1alpha1"
-	"github.com/yusuf/trafficctl/internal/controller"
-	"github.com/yusuf/trafficctl/internal/evaluator"
-	"github.com/yusuf/trafficctl/internal/metrics"
-	"github.com/yusuf/trafficctl/internal/router"
+	trafficv1alpha1 "github.com/mysarisoy/trafficctl/api/v1alpha1"
+	"github.com/mysarisoy/trafficctl/internal/controller"
+	"github.com/mysarisoy/trafficctl/internal/evaluator"
+	"github.com/mysarisoy/trafficctl/internal/metrics"
+	"github.com/mysarisoy/trafficctl/internal/router"
 	// +kubebuilder:scaffold:imports
 )
 

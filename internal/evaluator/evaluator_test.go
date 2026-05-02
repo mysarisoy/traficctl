@@ -19,7 +19,7 @@ package evaluator
 import (
 	"testing"
 
-	trafficv1alpha1 "github.com/yusuf/trafficctl/api/v1alpha1"
+	trafficv1alpha1 "github.com/mysarisoy/trafficctl/api/v1alpha1"
 )
 
 func backend(name string, min, max int32) trafficv1alpha1.Backend {

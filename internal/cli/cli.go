@@ -36,7 +36,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	trafficv1alpha1 "github.com/yusuf/trafficctl/api/v1alpha1"
+	trafficv1alpha1 "github.com/mysarisoy/trafficctl/api/v1alpha1"
 )
 
 // globals holds flags parsed on the root command so subcommands can read

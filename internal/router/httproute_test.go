@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	gatewayv1 "sigs.k8s.io/gateway-api/apis/v1"
 
-	trafficv1alpha1 "github.com/yusuf/trafficctl/api/v1alpha1"
+	trafficv1alpha1 "github.com/mysarisoy/trafficctl/api/v1alpha1"
 )
 
 func newTestScheme(t *testing.T) *runtime.Scheme {

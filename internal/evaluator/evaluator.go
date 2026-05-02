@@ -23,7 +23,7 @@ import (
 	"sort"
 	"strings"
 
-	trafficv1alpha1 "github.com/yusuf/trafficctl/api/v1alpha1"
+	trafficv1alpha1 "github.com/mysarisoy/trafficctl/api/v1alpha1"
 )
 
 // Signal is a single health dimension (e.g. latency, error-rate). A backend

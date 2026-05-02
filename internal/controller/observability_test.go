@@ -21,7 +21,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/testutil"
 
-	trafficv1alpha1 "github.com/yusuf/trafficctl/api/v1alpha1"
+	trafficv1alpha1 "github.com/mysarisoy/trafficctl/api/v1alpha1"
 )
 
 func TestRecordWeightShift_IncrementsCounterAndSetsGauges(t *testing.T) {

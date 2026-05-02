@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/yusuf/trafficctl/internal/cli"
+	"github.com/mysarisoy/trafficctl/internal/cli"
 )
 
 func main() {

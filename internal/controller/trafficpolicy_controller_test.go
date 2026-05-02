@@ -28,10 +28,10 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	trafficv1alpha1 "github.com/yusuf/trafficctl/api/v1alpha1"
-	"github.com/yusuf/trafficctl/internal/evaluator"
-	"github.com/yusuf/trafficctl/internal/metrics"
-	"github.com/yusuf/trafficctl/internal/router"
+	trafficv1alpha1 "github.com/mysarisoy/trafficctl/api/v1alpha1"
+	"github.com/mysarisoy/trafficctl/internal/evaluator"
+	"github.com/mysarisoy/trafficctl/internal/metrics"
+	"github.com/mysarisoy/trafficctl/internal/router"
 )
 
 type fakeWeighterCall struct {

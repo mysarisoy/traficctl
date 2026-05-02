@@ -22,7 +22,7 @@ import (
 	"context"
 	"fmt"
 
-	trafficv1alpha1 "github.com/yusuf/trafficctl/api/v1alpha1"
+	trafficv1alpha1 "github.com/mysarisoy/trafficctl/api/v1alpha1"
 )
 
 // Weighter applies backend weights to an external routing resource. The

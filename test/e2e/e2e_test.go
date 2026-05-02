@@ -30,7 +30,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yusuf/trafficctl/test/utils"
+	"github.com/mysarisoy/trafficctl/test/utils"
 )
 
 // namespace where the project is deployed in

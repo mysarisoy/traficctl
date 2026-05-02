@@ -7,7 +7,7 @@ domain: traffic.devops.io
 layout:
 - go.kubebuilder.io/v4
 projectName: trafficctl
-repo: github.com/yusuf/trafficctl
+repo: github.com/mysarisoy/trafficctl
 resources:
 - api:
     crdVersion: v1
@@ -16,6 +16,6 @@ resources:
   domain: traffic.devops.io
   group: traffic
   kind: TrafficPolicy
-  path: github.com/yusuf/trafficctl/api/v1alpha1
+  path: github.com/mysarisoy/trafficctl/api/v1alpha1
   version: v1alpha1
 version: "3"

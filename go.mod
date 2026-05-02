@@ -1,4 +1,4 @@
-module github.com/yusuf/trafficctl
+module github.com/mysarisoy/trafficctl
 
 go 1.25.3
 
